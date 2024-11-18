@@ -80,3 +80,14 @@ CREATE TABLE measurement_notifications (
     read BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+CREATE TABLE workouts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    exercise_type VARCHAR(50) NOT NULL,
+    sets INT NOT NULL,
+    reps INT NOT NULL,
+    weight DECIMAL(5,2) NOT NULL,
+    date_recorded DATE NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);

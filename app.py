@@ -172,8 +172,20 @@ def register():
             
     return render_template('register.html', msg=msg)
 
+# Ruta-DeleteWorkout
+@app.route('/delete_workout/<int:workout_id>')
+def delete_workout(workout_id):
+    if 'loggedin' not in session:
+        return redirect(url_for('login'))
+    
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('DELETE FROM workouts WHERE id = %s AND user_id = %s', (workout_id, session['id']))
+    mysql.connection.commit()
+    
+    return redirect(url_for('track'))
+
+
 # Ruta-Track
-@app.route('/track', methods=['GET', 'POST'])
 @app.route('/track', methods=['GET', 'POST'])
 def track():
     if 'loggedin' not in session:
@@ -182,37 +194,77 @@ def track():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     msg = ''
     
+    # Get exercise types for dropdown
+    cursor.execute('SELECT * FROM exercise_types')
+    exercise_types = cursor.fetchall()
+    
     # Get time period filter from request
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
     
     if request.method == 'POST':
-        # Get weight and selected date from form
-        weight = request.form.get('weight')
-        weight_date = request.form.get('weight_date')
-        
-        # Insert weight with the selected date
-        cursor.execute('''
-            INSERT INTO weight_tracking (user_id, weight, date_recorded)
-            VALUES (%s, %s, %s)
-        ''', (session['id'], weight, weight_date))
-        
-        # Get measurements and selected date
-        muscle_groups = ['arms', 'chest', 'legs', 'waist', 'shoulders']
-        measurement_date = request.form.get('measurement_date')
-        
-        for muscle in muscle_groups:
-            measurement = request.form.get(muscle)
-            if measurement:
-                cursor.execute('''
-                    INSERT INTO measurements (user_id, muscle_group, measurement, date_recorded)
-                    VALUES (%s, %s, %s, %s)
-                ''', (session['id'], muscle, measurement, measurement_date))
-        
-        mysql.connection.commit()
-        msg = 'Medidas registradas exitosamente!'
+        if 'workout_submit' in request.form:
+            # Handle workout submission
+            exercise_type = request.form.get('exercise_type')
+            sets = request.form.get('sets')
+            reps = request.form.get('reps')
+            weight = request.form.get('exercise_weight')
+            workout_date = request.form.get('workout_date')
+            
+            cursor.execute('''
+                INSERT INTO workouts 
+                (user_id, exercise_type, sets, reps, weight, date_recorded)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            ''', (session['id'], exercise_type, sets, reps, weight, workout_date))
+            mysql.connection.commit()
+            msg = 'Entrenamiento registrado exitosamente!'
+        else:
+            # Handle weight tracking
+            weight = request.form.get('weight')
+            weight_date = request.form.get('weight_date')
+            
+            cursor.execute('''
+                INSERT INTO weight_tracking (user_id, weight, date_recorded)
+                VALUES (%s, %s, %s)
+            ''', (session['id'], weight, weight_date))
+            
+            # Handle measurements tracking
+            muscle_groups = ['arms', 'chest', 'legs', 'waist', 'shoulders']
+            measurement_date = request.form.get('measurement_date')
+            
+            for muscle in muscle_groups:
+                measurement = request.form.get(muscle)
+                if measurement:
+                    cursor.execute('''
+                        INSERT INTO measurements (user_id, muscle_group, measurement, date_recorded)
+                        VALUES (%s, %s, %s, %s)
+                    ''', (session['id'], muscle, measurement, measurement_date))
+            
+            mysql.connection.commit()
+            msg = 'Medidas registradas exitosamente!'
     
-    # Modify queries to include date filtering
+    # Get workout history with date filtering
+    if start_date and end_date:
+        cursor.execute('''
+            SELECT w.*, et.description 
+            FROM workouts w 
+            JOIN exercise_types et ON w.exercise_type = et.name 
+            WHERE w.user_id = %s 
+            AND w.date_recorded BETWEEN %s AND %s
+            ORDER BY w.date_recorded DESC
+        ''', (session['id'], start_date, end_date))
+    else:
+        cursor.execute('''
+            SELECT w.*, et.description 
+            FROM workouts w 
+            JOIN exercise_types et ON w.exercise_type = et.name 
+            WHERE w.user_id = %s 
+            ORDER BY w.date_recorded DESC
+        ''', (session['id'],))
+    
+    workout_history = cursor.fetchall()
+    
+    # Get weight history with date filtering
     if start_date and end_date:
         cursor.execute('''
             SELECT * FROM weight_tracking 
@@ -229,7 +281,7 @@ def track():
     
     weight_history = cursor.fetchall()
     
-    # Similar filtering for measurements
+    # Get measurements history with date filtering
     if start_date and end_date:
         cursor.execute('''
             SELECT * FROM measurements 
@@ -252,6 +304,8 @@ def track():
     
     return render_template('track.html', 
                          msg=msg,
+                         exercise_types=exercise_types,
+                         workout_history=workout_history,
                          weight_history=weight_history,
                          measurements_history=measurements_history,
                          weight_graph=weight_graph,
