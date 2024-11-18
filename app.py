@@ -226,13 +226,14 @@ def track():
                          weight_graph=weight_graph,
                          measurements_graph=measurements_graph)
 
-
 def generate_weight_graph(weight_history):
     if not weight_history:
         return None
     
-    dates = [record['date_recorded'].strftime('%d-%m-%Y') for record in weight_history]
-    weights = [float(record['weight']) for record in weight_history]
+    # Sort data by date before plotting
+    sorted_data = sorted(weight_history, key=lambda x: x['date_recorded'])
+    dates = [record['date_recorded'].strftime('%d-%m-%Y') for record in sorted_data]
+    weights = [float(record['weight']) for record in sorted_data]
     
     plt.figure(figsize=(12, 6))
     plt.plot(dates, weights, marker='o', linestyle='-')
@@ -263,13 +264,18 @@ def generate_measurements_graph(measurements_history):
                 'dates': [],
                 'measurements': []
             }
-        muscle_data[muscle]['dates'].append(record['date_recorded'].strftime('%d-%m-%Y'))
+        muscle_data[muscle]['dates'].append(record['date_recorded'])
         muscle_data[muscle]['measurements'].append(float(record['measurement']))
     
     plt.figure(figsize=(12, 8))
     
     for muscle, data in muscle_data.items():
-        plt.plot(data['dates'], data['measurements'], marker='o', label=muscle, linestyle='-')
+        # Sort dates and measurements together
+        sorted_pairs = sorted(zip(data['dates'], data['measurements']))
+        sorted_dates = [date.strftime('%d-%m-%Y') for date, _ in sorted_pairs]
+        sorted_measurements = [measurement for _, measurement in sorted_pairs]
+        
+        plt.plot(sorted_dates, sorted_measurements, marker='o', label=muscle, linestyle='-')
     
     plt.title('Evolución de Medidas')
     plt.xlabel('Fecha')
@@ -286,7 +292,6 @@ def generate_measurements_graph(measurements_history):
     plt.close()
     
     return graph_url
-
 
 # Ruta-Logout
 @app.route('/logout')
