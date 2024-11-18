@@ -1,4 +1,3 @@
-{% block content %}
 <header>
     <nav>
         <a href="{{ url_for('dashboard') }}">[Dashboard]</a>
@@ -17,11 +16,21 @@
     
     <form method="POST">
         <div class="form-group">
+            <label for="weight_date">Fecha de registro del peso:</label>
+            <input type="date" class="form-control" id="weight_date" name="weight_date" required>
+        </div>
+        
+        <div class="form-group">
             <label for="weight">Peso (kg):</label>
             <input type="number" step="0.1" class="form-control" id="weight" name="weight" required>
         </div>
         
         <h3>Medidas (cm)</h3>
+        <div class="form-group">
+            <label for="measurement_date">Fecha de registro de medidas:</label>
+            <input type="date" class="form-control" id="measurement_date" name="measurement_date" required>
+        </div>
+        
         <div class="form-group">
             <label for="arms">Brazos:</label>
             <input type="number" step="0.1" class="form-control" id="arms" name="arms">
@@ -59,4 +68,3 @@
     <img src="data:image/png;base64,{{ measurements_graph }}" alt="Measurements Graph" class="img-fluid">
     {% endif %}
 </div>
-{% endblock %}

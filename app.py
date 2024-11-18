@@ -23,7 +23,6 @@ mysql = MySQL(app)
 app.secret_key = 'tu_clave_secreta_aqui'
 
 # Rutas de la aplicación
-
 # Ruta-Login
 @app.route('/')
 @app.route('/login', methods=['GET', 'POST'])
@@ -173,7 +172,8 @@ def register():
             
     return render_template('register.html', msg=msg)
 
-# Ruta para registrar peso y medidas
+# Ruta-Track
+@app.route('/track', methods=['GET', 'POST'])
 @app.route('/track', methods=['GET', 'POST'])
 def track():
     if 'loggedin' not in session:
@@ -183,35 +183,39 @@ def track():
     msg = ''
     
     if request.method == 'POST':
-        # Registrar peso
+        # Get weight and selected date from form
         weight = request.form.get('weight')
-        if weight:
-            cursor.execute('''
-                INSERT INTO weight_tracking (user_id, weight, date_recorded)
-                VALUES (%s, %s, CURDATE())
-            ''', (session['id'], weight))
+        weight_date = request.form.get('weight_date')
         
-        # Registrar medidas
+        # Insert weight with the selected date
+        cursor.execute('''
+            INSERT INTO weight_tracking (user_id, weight, date_recorded)
+            VALUES (%s, %s, %s)
+        ''', (session['id'], weight, weight_date))
+        
+        # Get measurements and selected date
         muscle_groups = ['arms', 'chest', 'legs', 'waist', 'shoulders']
+        measurement_date = request.form.get('measurement_date')
+        
         for muscle in muscle_groups:
             measurement = request.form.get(muscle)
             if measurement:
                 cursor.execute('''
                     INSERT INTO measurements (user_id, muscle_group, measurement, date_recorded)
-                    VALUES (%s, %s, %s, CURDATE())
-                ''', (session['id'], muscle, measurement))
+                    VALUES (%s, %s, %s, %s)
+                ''', (session['id'], muscle, measurement, measurement_date))
         
         mysql.connection.commit()
         msg = 'Medidas registradas exitosamente!'
     
-    # Obtener historial de peso y medidas
-    cursor.execute('SELECT * FROM weight_tracking WHERE user_id = %s ORDER BY date_recorded DESC LIMIT 10', (session['id'],))
+    # Get historical data for display
+    cursor.execute('SELECT * FROM weight_tracking WHERE user_id = %s ORDER BY date_recorded DESC', (session['id'],))
     weight_history = cursor.fetchall()
     
     cursor.execute('SELECT * FROM measurements WHERE user_id = %s ORDER BY date_recorded DESC', (session['id'],))
     measurements_history = cursor.fetchall()
     
-    # Generar gráficos
+    # Generate graphs
     weight_graph = generate_weight_graph(weight_history)
     measurements_graph = generate_measurements_graph(measurements_history)
     
@@ -222,21 +226,23 @@ def track():
                          weight_graph=weight_graph,
                          measurements_graph=measurements_graph)
 
+
 def generate_weight_graph(weight_history):
     if not weight_history:
         return None
     
-    dates = [record['date_recorded'] for record in weight_history]
+    dates = [record['date_recorded'].strftime('%d-%m-%Y') for record in weight_history]
     weights = [float(record['weight']) for record in weight_history]
     
-    plt.figure(figsize=(10, 6))
-    plt.plot(dates, weights, marker='o')
-    plt.title('Historial de Peso')
+    plt.figure(figsize=(12, 6))
+    plt.plot(dates, weights, marker='o', linestyle='-')
+    plt.title('Evolución del Peso')
     plt.xlabel('Fecha')
     plt.ylabel('Peso (kg)')
-    plt.xticks(rotation=45)
+    plt.xticks(dates, rotation=45, ha='right')
+    plt.grid(True)
+    plt.tight_layout()
     
-    # Convertir el gráfico a base64 para mostrar en HTML
     img = io.BytesIO()
     plt.savefig(img, format='png', bbox_inches='tight')
     img.seek(0)
@@ -249,26 +255,29 @@ def generate_measurements_graph(measurements_history):
     if not measurements_history:
         return None
     
-    # Agrupar medidas por grupo muscular
-    muscle_groups = {}
+    muscle_data = {}
     for record in measurements_history:
-        if record['muscle_group'] not in muscle_groups:
-            muscle_groups[record['muscle_group']] = {
+        muscle = record['muscle_group']
+        if muscle not in muscle_data:
+            muscle_data[muscle] = {
                 'dates': [],
                 'measurements': []
             }
-        muscle_groups[record['muscle_group']]['dates'].append(record['date_recorded'])
-        muscle_groups[record['muscle_group']]['measurements'].append(float(record['measurement']))
+        muscle_data[muscle]['dates'].append(record['date_recorded'].strftime('%d-%m-%Y'))
+        muscle_data[muscle]['measurements'].append(float(record['measurement']))
     
     plt.figure(figsize=(12, 8))
-    for muscle, data in muscle_groups.items():
-        plt.plot(data['dates'], data['measurements'], marker='o', label=muscle)
     
-    plt.title('Historial de Medidas')
+    for muscle, data in muscle_data.items():
+        plt.plot(data['dates'], data['measurements'], marker='o', label=muscle, linestyle='-')
+    
+    plt.title('Evolución de Medidas')
     plt.xlabel('Fecha')
     plt.ylabel('Medida (cm)')
     plt.legend()
-    plt.xticks(rotation=45)
+    plt.xticks(rotation=45, ha='right')
+    plt.grid(True)
+    plt.tight_layout()
     
     img = io.BytesIO()
     plt.savefig(img, format='png', bbox_inches='tight')
@@ -277,6 +286,7 @@ def generate_measurements_graph(measurements_history):
     plt.close()
     
     return graph_url
+
 
 # Ruta-Logout
 @app.route('/logout')
