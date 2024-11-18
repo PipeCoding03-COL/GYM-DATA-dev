@@ -1,0 +1,45 @@
+<!-- templates/dashboard.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+      <div id="content"></div>
+    <div class="dashboard-container">
+        <header>
+            <h2>Bienvenido, {{ username }}</h2>
+            <nav>
+                <a href="{{ url_for('survey') }}" class="edit-preferences">Editar Preferencias</a>
+                <a href="{{ url_for('track') }}">[Track]</a>
+                <a href="{{ url_for('logout') }}">[Cerrar Sesión]</a>
+            </nav>
+        </header>
+
+        <div class="preferences-summary">
+            <section class="exercise-preferences">
+                <h3>Tus Tipos de Ejercicios</h3>
+                {% for pref in preferences %}
+                <div class="exercise-card">
+                    <h4>{{ pref.exercise_type }}</h4>
+                    <p>Frecuencia: {{ pref.frequency }} veces por semana</p>
+                    <p>Nivel: {{ pref.experience_level }}</p>
+                    <p class="description">{{ pref.description }}</p>
+                </div>
+                {% endfor %}
+            </section>
+
+            <section class="muscle-groups">
+                <h3>Tus Grupos Musculares Priorizados</h3>
+                <ul class="priority-list">
+                    {% for group in muscle_groups %}
+                    <li>{{ group.muscle_group }}</li>
+                    {% endfor %}
+                </ul>
+            </section>
+        </div>
+    </div>
+</body>
+</html>

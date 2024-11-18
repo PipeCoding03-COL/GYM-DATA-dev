@@ -1,0 +1,58 @@
+<!-- templates/survey.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Encuesta de Ejercicios</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="survey-container">
+        <h2>Personaliza tu experiencia</h2>
+        <form action="{{ url_for('survey') }}" method="post">
+            <section class="exercise-types">
+                <h3>¿Qué tipos de ejercicios realizas?</h3>
+                {% for type in exercise_types %}
+                <div class="exercise-type">
+                    <input type="checkbox" name="exercise_types" value="{{ type.name }}" id="{{ type.name }}"
+                           {% if type.name in user_preferences|map(attribute='exercise_type') %}checked{% endif %}>
+                    <label for="{{ type.name }}">{{ type.name }}</label>
+                    
+                    <div class="exercise-details">
+                        <label>Frecuencia semanal:</label>
+                        <select name="frequency_{{ type.name }}">
+                            <option value="1">1-2 veces</option>
+                            <option value="3">3-4 veces</option>
+                            <option value="5">5+ veces</option>
+                        </select>
+                        
+                        <label>Nivel de experiencia:</label>
+                        <select name="experience_{{ type.name }}">
+                            <option value="Principiante">Principiante</option>
+                            <option value="Intermedio">Intermedio</option>
+                            <option value="Avanzado">Avanzado</option>
+                        </select>
+                    </div>
+                </div>
+                {% endfor %}
+            </section>
+
+            <section class="muscle-groups">
+                <h3>¿Qué grupos musculares te interesa trabajar? (Ordena por prioridad)</h3>
+                <div class="sortable-list">
+                    {% for group in muscle_groups %}
+                    <div class="muscle-group-item">
+                        <input type="checkbox" name="muscle_groups" value="{{ group.name }}" id="muscle_{{ group.name }}"
+                               {% if group.name in user_muscle_groups|map(attribute='muscle_group') %}checked{% endif %}>
+                        <label for="muscle_{{ group.name }}">{{ group.name }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <input type="submit" value="Guardar Preferencias">
+        </form>
+    </div>
+    <script src="{{ url_for('static', filename='survey.js') }}"></script>
+</body>
+</html>

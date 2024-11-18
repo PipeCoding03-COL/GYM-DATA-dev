@@ -1,0 +1,62 @@
+{% block content %}
+<header>
+    <nav>
+        <a href="{{ url_for('dashboard') }}">[Dashboard]</a>
+        <a href="{{ url_for('survey') }}" class="edit-preferences">[Editar Preferencias]</a>
+        <a href="{{ url_for('track') }}">[Track]</a>
+        <a href="{{ url_for('logout') }}">[Cerrar Sesión]</a>
+    </nav>
+</header>
+
+<div class="container">
+    <h2>Registro de Peso y Medidas</h2>
+    
+    {% if msg %}
+    <div class="alert alert-success">{{ msg }}</div>
+    {% endif %}
+    
+    <form method="POST">
+        <div class="form-group">
+            <label for="weight">Peso (kg):</label>
+            <input type="number" step="0.1" class="form-control" id="weight" name="weight" required>
+        </div>
+        
+        <h3>Medidas (cm)</h3>
+        <div class="form-group">
+            <label for="arms">Brazos:</label>
+            <input type="number" step="0.1" class="form-control" id="arms" name="arms">
+        </div>
+        
+        <div class="form-group">
+            <label for="chest">Pecho:</label>
+            <input type="number" step="0.1" class="form-control" id="chest" name="chest">
+        </div>
+        
+        <div class="form-group">
+            <label for="legs">Piernas:</label>
+            <input type="number" step="0.1" class="form-control" id="legs" name="legs">
+        </div>
+        
+        <div class="form-group">
+            <label for="waist">Cintura:</label>
+            <input type="number" step="0.1" class="form-control" id="waist" name="waist">
+        </div>
+        
+        <div class="form-group">
+            <label for="shoulders">Hombros:</label>
+            <input type="number" step="0.1" class="form-control" id="shoulders" name="shoulders">
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Guardar</button>
+    </form>
+    
+    <h3>Gráficos</h3>
+    {% if weight_graph %}
+    <img src="data:image/png;base64,{{ weight_graph }}" alt="Weight Graph" class="img-fluid">
+    {% endif %}
+    
+    {% if measurements_graph %}
+    <img src="data:image/png;base64,{{ measurements_graph }}" alt="Measurements Graph" class="img-fluid">
+    {% endif %}
+</div>
+{% endblock %}

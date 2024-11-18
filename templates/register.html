@@ -1,0 +1,22 @@
+<!-- templates/register.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Registro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="login-form">
+        <h2>Registro</h2>
+        <form action="{{ url_for('register') }}" method="post">
+            <div class="msg">{{ msg }}</div>
+            <input type="text" name="username" placeholder="Usuario" required>
+            <input type="password" name="password" placeholder="Contraseña" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="submit" value="Registro">
+        </form>
+        <p>¿Ya tienes una cuenta? <a href="{{ url_for('login') }}">Login aquí</a></p>
+    </div>
+</body>
+</html>
