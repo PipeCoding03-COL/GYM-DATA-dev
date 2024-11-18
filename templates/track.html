@@ -1,13 +1,15 @@
-<header>
-    <nav>
-        <a href="{{ url_for('dashboard') }}">[Dashboard]</a>
-        <a href="{{ url_for('survey') }}" class="edit-preferences">[Editar Preferencias]</a>
-        <a href="{{ url_for('track') }}">[Track]</a>
-        <a href="{{ url_for('logout') }}">[Cerrar Sesión]</a>
-    </nav>
-</header>
+{% extends 'base.html' %}
 
-<div class="container">
+{% block content %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Registros</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+<div class="content">
     <h2>Registro de Peso y Medidas</h2>
     
     {% if msg %}
@@ -200,8 +202,10 @@
         </table>
     </div>
 </div>
-
 </div>
+</body>
+</html>
+{% endblock %}
 
 <script>
 function editWorkout(workoutId) {
