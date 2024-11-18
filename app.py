@@ -182,6 +182,10 @@ def track():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     msg = ''
     
+    # Get time period filter from request
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    
     if request.method == 'POST':
         # Get weight and selected date from form
         weight = request.form.get('weight')
@@ -208,11 +212,38 @@ def track():
         mysql.connection.commit()
         msg = 'Medidas registradas exitosamente!'
     
-    # Get historical data for display
-    cursor.execute('SELECT * FROM weight_tracking WHERE user_id = %s ORDER BY date_recorded DESC', (session['id'],))
+    # Modify queries to include date filtering
+    if start_date and end_date:
+        cursor.execute('''
+            SELECT * FROM weight_tracking 
+            WHERE user_id = %s 
+            AND date_recorded BETWEEN %s AND %s 
+            ORDER BY date_recorded
+        ''', (session['id'], start_date, end_date))
+    else:
+        cursor.execute('''
+            SELECT * FROM weight_tracking 
+            WHERE user_id = %s 
+            ORDER BY date_recorded
+        ''', (session['id'],))
+    
     weight_history = cursor.fetchall()
     
-    cursor.execute('SELECT * FROM measurements WHERE user_id = %s ORDER BY date_recorded DESC', (session['id'],))
+    # Similar filtering for measurements
+    if start_date and end_date:
+        cursor.execute('''
+            SELECT * FROM measurements 
+            WHERE user_id = %s 
+            AND date_recorded BETWEEN %s AND %s 
+            ORDER BY date_recorded
+        ''', (session['id'], start_date, end_date))
+    else:
+        cursor.execute('''
+            SELECT * FROM measurements 
+            WHERE user_id = %s 
+            ORDER BY date_recorded
+        ''', (session['id'],))
+    
     measurements_history = cursor.fetchall()
     
     # Generate graphs
@@ -224,7 +255,9 @@ def track():
                          weight_history=weight_history,
                          measurements_history=measurements_history,
                          weight_graph=weight_graph,
-                         measurements_graph=measurements_graph)
+                         measurements_graph=measurements_graph,
+                         start_date=start_date,
+                         end_date=end_date)
 
 def generate_weight_graph(weight_history):
     if not weight_history:

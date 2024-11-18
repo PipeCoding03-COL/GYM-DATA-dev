@@ -13,6 +13,27 @@
     {% if msg %}
     <div class="alert alert-success">{{ msg }}</div>
     {% endif %}
+
+    <!-- Date filter form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Filtrar por período</h4>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="form-inline">
+                <div class="form-group mr-3">
+                    <label for="start_date" class="mr-2">Desde:</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+                </div>
+                <div class="form-group mr-3">
+                    <label for="end_date" class="mr-2">Hasta:</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+                </div>
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+                <a href="{{ url_for('track') }}" class="btn btn-secondary ml-2">Reiniciar</a>
+            </form>
+        </div>
+    </div>
     
     <form method="POST">
         <div class="form-group">
