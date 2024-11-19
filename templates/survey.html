@@ -1,20 +1,14 @@
-{% extends 'base.html' %}
-
-{% block content %}
 <!-- templates/survey.html -->
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Encuesta de ejercicios</title>
+    <title>Encuesta de Ejercicios</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="content">
-        <div class="dashboard-container"><header>
-        <h2>Personaliza tu experiencia</h2></header>
     <div class="survey-container">
-        
+        <h2>Personaliza tu experiencia</h2>
         <form action="{{ url_for('survey') }}" method="post">
             <section class="exercise-types">
                 <h3>¿Qué tipos de ejercicios realizas?</h3>
@@ -62,4 +56,3 @@
     <script src="{{ url_for('static', filename='survey.js') }}"></script>
 </body>
 </html>
-{% endblock %}
