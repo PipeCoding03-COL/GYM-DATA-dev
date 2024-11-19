@@ -2,7 +2,7 @@
     "python": {
       "version": "3.12.3",
       "build_command": "pip install -r requirements.txt",
-      "run_command": "gunicorn app:app",
+      "run_command": "web: gunicorn app:app",
       "env": {
         "VARIABLE_NAME": "value"
       },
@@ -13,6 +13,7 @@
             "target": "/static/"
           }
         ]
-      }
+      },
+      "module": "app"
     }
   }
