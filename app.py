@@ -23,14 +23,8 @@ mysql = MySQL(app)
 app.secret_key = 'tu_clave_secreta_aqui'
 
 # Rutas de la aplicación
-# Ruta-Base
-@app.route('/base', methods=['GET', 'POST'])
-def base():
-    msg = ''
-
-    return render_template('base.html', msg=msg)
-
 # Ruta-Login
+@app.route('/')
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     msg = ''
